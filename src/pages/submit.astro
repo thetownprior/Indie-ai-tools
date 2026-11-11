@@ -1,0 +1,51 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { breadcrumbJsonLd } from '../lib/seo';
+import { siteConfig } from '../site.config';
+
+const description = 'Suggest an indie AI tool for the directory. Inclusion is editorial and not guaranteed.';
+const crumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'Submit a tool', path: '/submit/' },
+];
+const subject = encodeURIComponent('Tool suggestion for Indie AI Tools');
+const body = encodeURIComponent(
+  ['Tool name:', 'Website:', 'Who it is for:', 'Why it belongs in the directory:', ''].join('\n'),
+);
+const mailto = `mailto:${siteConfig.submitEmail}?subject=${subject}&body=${body}`;
+const placeholder = siteConfig.submitEmail.endsWith('@example.com');
+---
+
+<BaseLayout title="Submit a tool" description={description} jsonLd={[breadcrumbJsonLd(crumbs)]}>
+  <Breadcrumbs items={crumbs} />
+  <p class="kicker">Submit</p>
+  <h1 class="page-title">Suggest a tool.</h1>
+  <div class="prose-page">
+    <p>
+      The directory adds reviews one at a time. You can send a suggestion by email. A suggestion is not a booking, and
+      it does not guarantee a page.
+    </p>
+    <p>
+      <a class="button" href={mailto}>Email a tool suggestion</a>
+    </p>
+    {
+      placeholder && (
+        <p>
+          The address on this button is a placeholder (<code>{siteConfig.submitEmail}</code>). The site owner replaces
+          <code>submitEmail</code> in <code>src/site.config.ts</code> before inviting real submissions.
+        </p>
+      )
+    }
+    <h2>What to include</h2>
+    <ul>
+      <li>The tool's name and official website.</li>
+      <li>Who it is for, in a sentence.</li>
+      <li>Why it fits solo creators or a small business.</li>
+    </ul>
+    <p>
+      Send claims you can stand behind. The review will not invent prices, user counts, or features that were not
+      provided. Sponsored requests should say so in the email. Those pages get a Sponsored label if they run.
+    </p>
+  </div>
+</BaseLayout>

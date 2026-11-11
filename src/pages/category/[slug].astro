@@ -1,0 +1,39 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import ToolList from '../../components/ToolList.astro';
+import { breadcrumbJsonLd, itemListJsonLd } from '../../lib/seo';
+import { getCategories, type TermGroup } from '../../lib/tools';
+
+export async function getStaticPaths() {
+  const categories = await getCategories();
+  return categories.map((category) => ({
+    params: { slug: category.slug },
+    props: { category },
+  }));
+}
+
+interface Props {
+  category: TermGroup;
+}
+
+const { category } = Astro.props;
+const description = `Indie AI tools filed under ${category.name}, reviewed for solo creators and small businesses.`;
+const crumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'All tools', path: '/tools/' },
+  { name: category.name, path: `/category/${category.slug}/` },
+];
+---
+
+<BaseLayout
+  title={`${category.name} tools`}
+  description={description}
+  jsonLd={[itemListJsonLd(`${category.name} tools`, category.tools), breadcrumbJsonLd(crumbs)]}
+>
+  <Breadcrumbs items={crumbs} />
+  <p class="kicker">Category</p>
+  <h1 class="page-title">{category.name}</h1>
+  <p class="lede">{description}</p>
+  <ToolList tools={category.tools} />
+</BaseLayout>

@@ -1,0 +1,24 @@
+---
+import { href } from '../lib/urls';
+import { siteConfig } from '../site.config';
+
+const year = new Date().getUTCFullYear();
+---
+
+<footer class="site-footer">
+  <div class="shell">
+    <div class="footer-grid">
+      <p>
+        {siteConfig.description} Sponsored placements are labeled. Affiliate buttons are marked on the page.
+      </p>
+      <ul class="footer-links">
+        <li><a href={href('/tools/')}>All tools</a></li>
+        <li><a href={href('/about/')}>About</a></li>
+        <li><a href={href('/affiliate-disclosure/')}>Affiliate disclosure</a></li>
+        <li><a href={href('/submit/')}>Submit a tool</a></li>
+        <li><a href={href('/rss.xml')}>RSS feed of new tools</a></li>
+      </ul>
+    </div>
+    <p class="legal">&copy; {year} {siteConfig.name}</p>
+  </div>
+</footer>

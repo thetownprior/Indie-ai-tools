@@ -1,0 +1,160 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import OutboundLink from '../../components/OutboundLink.astro';
+import { href } from '../../lib/urls';
+import { breadcrumbJsonLd, toolJsonLd } from '../../lib/seo';
+import {
+  formatDate,
+  getPublishedTools,
+  isoDate,
+  pricingLabel,
+  slugify,
+  type ToolEntry,
+} from '../../lib/tools';
+
+export async function getStaticPaths() {
+  const tools = await getPublishedTools();
+  return tools.map((tool) => ({
+    params: { slug: tool.id },
+    props: { tool },
+  }));
+}
+
+interface Props {
+  tool: ToolEntry;
+}
+
+const { tool } = Astro.props;
+const { data } = tool;
+const { Content, headings } = await render(tool);
+const sections = headings.filter((heading) => heading.depth === 2);
+const tags = [...data.tags].sort((a, b) => a.localeCompare(b));
+const crumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'All tools', path: '/tools/' },
+  { name: data.name, path: `/tools/${tool.id}/` },
+];
+---
+
+<BaseLayout
+  title={`${data.name} review`}
+  description={data.verdict}
+  ogType="article"
+  publishedTime={isoDate(data.dateAdded)}
+  modifiedTime={isoDate(data.lastReviewed)}
+  jsonLd={[toolJsonLd(tool), breadcrumbJsonLd(crumbs)]}
+>
+  {
+    data.draft && (
+      <p class="draft-banner" role="status">
+        Draft preview. This page is excluded from the production build.
+      </p>
+    )
+  }
+  <Breadcrumbs items={crumbs} />
+  <header class="tool-heading">
+    {
+      data.logo ? (
+        <img class="logo" src={href(data.logo)} alt="" width="56" height="56" decoding="async" />
+      ) : (
+        <span class="monogram" aria-hidden="true">
+          {data.name.slice(0, 1).toUpperCase()}
+        </span>
+      )
+    }
+    <div>
+      <p class="kicker-row">
+        <a class="kicker" href={href(`/category/${slugify(data.category)}/`)}>{data.category}</a>
+        {data.sponsored && <span class="sponsored-label">Sponsored</span>}
+      </p>
+      <h1>{data.name}</h1>
+    </div>
+  </header>
+  <p class="tool-dek">{data.tagline}</p>
+  <blockquote class="verdict">
+    <p>{data.verdict}</p>
+  </blockquote>
+  <OutboundLink name={data.name} website={data.website} affiliateUrl={data.affiliateUrl} />
+  {
+    data.sponsored && (
+      <p class="disclosure">
+        Sponsored placement. The label is here so the placement is obvious. Read the{' '}
+        <a href={href('/affiliate-disclosure/')}>affiliate disclosure</a> for how paid placement and affiliate links work.
+      </p>
+    )
+  }
+
+  <div class="tool-layout">
+    <aside class="tool-facts">
+      <dl class="facts">
+        <div>
+          <dt>Audience</dt>
+          <dd>{data.audience}</dd>
+        </div>
+        <div>
+          <dt>Pricing</dt>
+          <dd>{pricingLabel(data.pricing)}</dd>
+        </div>
+        <div>
+          <dt>Category</dt>
+          <dd><a href={href(`/category/${slugify(data.category)}/`)}>{data.category}</a></dd>
+        </div>
+        {
+          tags.length > 0 && (
+            <div>
+              <dt>Tags</dt>
+              <dd>
+                <ul class="tag-list">
+                  {tags.map((tag) => (
+                    <li>
+                      <a href={href(`/tag/${slugify(tag)}/`)}>{tag}</a>
+                    </li>
+                  ))}
+                </ul>
+              </dd>
+            </div>
+          )
+        }
+        {
+          data.maker && (
+            <div>
+              <dt>Maker</dt>
+              <dd>{data.maker}</dd>
+            </div>
+          )
+        }
+        <div>
+          <dt>Added</dt>
+          <dd>
+            <time datetime={isoDate(data.dateAdded)}>{formatDate(data.dateAdded)}</time>
+          </dd>
+        </div>
+        <div>
+          <dt>Last reviewed</dt>
+          <dd>
+            <time datetime={isoDate(data.lastReviewed)}>{formatDate(data.lastReviewed)}</time>
+          </dd>
+        </div>
+      </dl>
+      {
+        sections.length > 0 && (
+          <nav class="on-this-page" aria-label="On this page">
+            <p class="kicker">On this page</p>
+            <ol>
+              {sections.map((section) => (
+                <li>
+                  <a href={`#${section.slug}`}>{section.text}</a>
+                </li>
+              ))}
+            </ol>
+          </nav>
+        )
+      }
+    </aside>
+    <article class="review">
+      <Content />
+    </article>
+  </div>
+</BaseLayout>

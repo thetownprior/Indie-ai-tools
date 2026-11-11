@@ -1,0 +1,19 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { href } from '../lib/urls';
+
+const description = 'This page is not in the Indie AI Tools directory.';
+---
+
+<BaseLayout title="Page not found" description={description} noindex>
+  <p class="kicker">404</p>
+  <h1 class="page-title">That page is not in the directory.</h1>
+  <p class="lede">
+    The link may be mistyped, or the review may still be a draft. Drafts are checked into the repository and left off
+    the public site.
+  </p>
+  <div class="actions">
+    <a class="button" href={href('/')}>Back home</a>
+    <a class="button button-secondary" href={href('/tools/')}>All tools</a>
+  </div>
+</BaseLayout>

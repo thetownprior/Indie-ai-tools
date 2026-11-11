@@ -1,0 +1,48 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { href } from '../lib/urls';
+import { breadcrumbJsonLd } from '../lib/seo';
+
+const description =
+  'Indie AI Tools is a curated directory of independent AI products for solo creators and small businesses.';
+const crumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'About', path: '/about/' },
+];
+---
+
+<BaseLayout title="About" description={description} jsonLd={[breadcrumbJsonLd(crumbs)]}>
+  <Breadcrumbs items={crumbs} />
+  <p class="kicker">About</p>
+  <h1 class="page-title">A short list, reviewed one tool at a time.</h1>
+  <div class="prose-page">
+    <p>
+      Indie AI Tools is a directory of independent AI products for people who run a business alone or with a small team.
+      Each page is one tool: what it is, who it is for, what it costs, and a plain verdict.
+    </p>
+    <h2>How a page gets here</h2>
+    <p>
+      Reviews are Markdown files in this site's repository. A file with <code>draft: true</code> stays off the public site.
+      Publishing is a new file on <code>main</code>. The build checks the shape of every file before it goes live.
+    </p>
+    <h2>Money on the page</h2>
+    <p>
+      A tool marked Sponsored is a paid placement, and the label is always visible. Featured only controls whether a tool
+      sits in the featured block on the home page. Paid placements should be both featured and sponsored.
+    </p>
+    <p>
+      Some visit buttons are affiliate links. Those buttons use <code>rel="sponsored nofollow"</code>, say so on the page,
+      and still show the official website beside them. The verdict is not for sale. Details are on the
+      <a href={href('/affiliate-disclosure/')}>affiliate disclosure</a>.
+    </p>
+    <h2>What we will not invent</h2>
+    <p>
+      Pages do not invent star ratings, user counts, or product facts that were not supplied with the review. If a price
+      is a sentence rather than a number, the page keeps the sentence.
+    </p>
+    <p>
+      Want a tool considered? Use the <a href={href('/submit/')}>submit page</a>. Sending a note does not guarantee a listing.
+    </p>
+  </div>
+</BaseLayout>

@@ -1,0 +1,39 @@
+---
+import SiteMark from './SiteMark.astro';
+import { href } from '../lib/urls';
+
+const path = Astro.url.pathname;
+const toolsOn =
+  path.startsWith(href('/tools/')) || path.startsWith(href('/category/')) || path.startsWith(href('/tag/'));
+
+const items = [
+  { href: '/tools/', label: 'Tools', current: toolsOn },
+  { href: '/about/', label: 'About', current: path === href('/about/') },
+  { href: '/submit/', label: 'Submit', current: path === href('/submit/') },
+];
+---
+
+<header class="site-header">
+  <div class="shell header-inner">
+    <a class="wordmark" href={href('/')}>
+      <SiteMark />
+      <span>
+        <span class="wordmark-name">Indie AI Tools</span>
+        <span class="wordmark-sub">For solo creators and small businesses</span>
+      </span>
+    </a>
+    <nav aria-label="Primary">
+      <ul class="nav-list">
+        {
+          items.map((item) => (
+            <li>
+              <a href={href(item.href)} aria-current={item.current ? 'page' : undefined}>
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </div>
+</header>

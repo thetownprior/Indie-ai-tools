@@ -1,0 +1,45 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { breadcrumbJsonLd } from '../lib/seo';
+
+const description =
+  'How Indie AI Tools labels sponsored placements and affiliate links, and what those labels do not change.';
+const crumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'Affiliate disclosure', path: '/affiliate-disclosure/' },
+];
+---
+
+<BaseLayout title="Affiliate disclosure" description={description} jsonLd={[breadcrumbJsonLd(crumbs)]}>
+  <Breadcrumbs items={crumbs} />
+  <p class="kicker">Disclosure</p>
+  <h1 class="page-title">Sponsored labels and affiliate links.</h1>
+  <div class="prose-page">
+    <p>
+      Some tool pages include a commercial relationship. This page says what that looks like. It does not mean every
+      tool in the directory has one.
+    </p>
+    <h2>Affiliate links</h2>
+    <p>
+      When a review includes <code>affiliateUrl</code>, the main visit button goes to that address instead of the
+      official website. The button is an affiliate link: we may earn a commission if you buy or sign up through it, at
+      no extra cost added by this directory.
+    </p>
+    <p>
+      That button uses <code>rel="sponsored nofollow"</code>. The page also links the official website separately, so
+      you can see the real domain and open it without the affiliate address.
+    </p>
+    <h2>Sponsored</h2>
+    <p>
+      A visible Sponsored label means the placement was paid for. Featured is separate: it only means the tool appears
+      in the featured block on the home page. A paid placement should set both <code>featured</code> and
+      <code>sponsored</code>.
+    </p>
+    <h2>What the labels do not change</h2>
+    <p>
+      An affiliate link or a sponsored label does not write the verdict. Pros, cons, and the summary are the review.
+      If we would not publish the review without the payment, it does not belong here.
+    </p>
+  </div>
+</BaseLayout>
