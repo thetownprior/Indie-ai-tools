@@ -1,0 +1,32 @@
+---
+import { href } from '../lib/urls';
+import { pricingLabel, type ToolEntry } from '../lib/tools';
+
+interface Props {
+  tool: ToolEntry;
+}
+
+const { tool } = Astro.props;
+const { data } = tool;
+---
+
+<a class="tool-row" href={href(`/tools/${tool.id}/`)}>
+  {
+    data.logo ? (
+      <img class="logo" src={href(data.logo)} alt="" width="44" height="44" decoding="async" />
+    ) : (
+      <span class="monogram" aria-hidden="true">
+        {data.name.slice(0, 1).toUpperCase()}
+      </span>
+    )
+  }
+  <span class="tool-copy">
+    <span class="tool-name">
+      {data.name}
+      {data.sponsored && <span class="sponsored-label">Sponsored</span>}
+    </span>
+    <span class="tool-tagline">{data.tagline}</span>
+  </span>
+  <span class="tool-meta">{data.category}</span>
+  <span class="tool-meta">{pricingLabel(data.pricing)}</span>
+</a>

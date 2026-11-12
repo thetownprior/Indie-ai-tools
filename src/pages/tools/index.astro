@@ -1,0 +1,86 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolList from '../../components/ToolList.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import filterSource from '../../scripts/tool-filters.js?raw';
+import { breadcrumbJsonLd, itemListJsonLd } from '../../lib/seo';
+import {
+  getCategories,
+  getPublishedTools,
+  getTagGroups,
+  pricingModelLabel,
+} from '../../lib/tools';
+
+const tools = await getPublishedTools();
+const categories = await getCategories();
+const tags = await getTagGroups();
+const pricingModels = [...new Set(tools.map((tool) => tool.data.pricing.model))];
+const description = 'Every published review in the Indie AI Tools directory. Filter by category, tag, or pricing.';
+const crumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'All tools', path: '/tools/' },
+];
+const jsonLd = [breadcrumbJsonLd(crumbs)];
+if (tools.length > 0) jsonLd.push(itemListJsonLd('All tools', tools));
+---
+
+<BaseLayout title="All tools" description={description} jsonLd={jsonLd}>
+  <p class="kicker">Index</p>
+  <h1 class="page-title">All tools</h1>
+  <p class="lede">{description}</p>
+
+  {
+    tools.length === 0 ? (
+      <EmptyState
+        title="No tools are published yet."
+        body="Search and filters will show up with the first review. Until then, the directory is an empty shelf on purpose."
+      />
+    ) : (
+      <>
+        <form class="filters" data-tool-filters role="search">
+          <label>
+            Search
+            <input type="search" name="q" placeholder="Name, audience, or verdict" autocomplete="off" />
+          </label>
+          <label>
+            Category
+            <select name="category">
+              <option value="">All</option>
+              {categories.map((category) => (
+                <option value={category.slug}>{category.name}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Tag
+            <select name="tag">
+              <option value="">All</option>
+              {tags.map((tag) => (
+                <option value={tag.slug}>{tag.name}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Pricing
+            <select name="pricing">
+              <option value="">All</option>
+              {pricingModels.map((model) => (
+                <option value={model}>{pricingModelLabel(model)}</option>
+              ))}
+            </select>
+          </label>
+          <button class="text-button" type="button" data-clear-filters>Clear</button>
+        </form>
+        <p class="filter-status">
+          Showing <span data-visible-count>{tools.length}</span> of {tools.length} tools.
+        </p>
+        <p data-filter-empty hidden>No tools match those filters.</p>
+        <ToolList tools={tools} filterable />
+        <noscript>
+          <p class="disclosure">Filters use a small script in the browser. Every published tool is still listed above.</p>
+        </noscript>
+        <script is:inline set:html={filterSource} />
+      </>
+    )
+  }
+</BaseLayout>

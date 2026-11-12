@@ -1,0 +1,31 @@
+---
+import ToolCard from './ToolCard.astro';
+import { searchText, slugify, type ToolEntry } from '../lib/tools';
+
+interface Props {
+  tools: ToolEntry[];
+  filterable?: boolean;
+}
+
+const { tools, filterable = false } = Astro.props;
+---
+
+<ul class="tool-list">
+  {
+    tools.map((tool) => (
+      <li
+        {...(filterable
+          ? {
+              'data-tool': 'true',
+              'data-search': searchText(tool),
+              'data-category': slugify(tool.data.category),
+              'data-tags': tool.data.tags.map((tag) => slugify(tag)).join(' '),
+              'data-pricing': tool.data.pricing.model,
+            }
+          : {})}
+      >
+        <ToolCard tool={tool} />
+      </li>
+    ))
+  }
+</ul>

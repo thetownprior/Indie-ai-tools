@@ -1,0 +1,110 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ToolList from '../components/ToolList.astro';
+import EmptyState from '../components/EmptyState.astro';
+import { href } from '../lib/urls';
+import { itemListJsonLd, websiteJsonLd } from '../lib/seo';
+import { getCategories, getPublishedTools } from '../lib/tools';
+import { siteConfig } from '../site.config';
+
+const tools = await getPublishedTools();
+const categories = await getCategories();
+const featured = tools.filter((tool) => tool.data.featured);
+const latest = tools.slice(0, siteConfig.latestLimit);
+const countLabel =
+  tools.length === 0
+    ? 'No tools are published yet.'
+    : `${tools.length} published ${tools.length === 1 ? 'tool' : 'tools'}.`;
+
+const jsonLd = [websiteJsonLd()];
+if (latest.length > 0) jsonLd.push(itemListJsonLd('Latest tools', latest));
+---
+
+<BaseLayout title={siteConfig.name} description={siteConfig.description} jsonLd={jsonLd}>
+  <section class="hero">
+    <p class="kicker">A directory, not a dump</p>
+    <h1>The short list of indie AI tools worth your time.</h1>
+    <p class="lede">{siteConfig.description}</p>
+    <div class="actions">
+      <a class="button" href={href('/tools/')}>Browse tools</a>
+      <a class="button button-secondary" href={href('/submit/')}>Submit a tool</a>
+    </div>
+    <p class="status-line">{countLabel}</p>
+  </section>
+
+  {
+    featured.length > 0 && (
+      <section class="section" aria-labelledby="featured-heading">
+        <div class="section-head">
+          <h2 id="featured-heading">Featured</h2>
+        </div>
+        <ToolList tools={featured} />
+      </section>
+    )
+  }
+
+  <section class="section" aria-labelledby="latest-heading">
+    <div class="section-head">
+      <h2 id="latest-heading">Latest</h2>
+      {latest.length > 0 && <a href={href('/tools/')}>All tools</a>}
+    </div>
+    {
+      latest.length > 0 ? (
+        <ToolList tools={latest} />
+      ) : (
+        <EmptyState
+          title="Nothing in the index yet"
+          body="When a review is published, it lands here, on its own page, and in the RSS feed. The directory grows by one tool at a time."
+        />
+      )
+    }
+  </section>
+
+  <section class="section" aria-labelledby="category-heading">
+    <div class="section-head">
+      <h2 id="category-heading">Browse by category</h2>
+    </div>
+    {
+      categories.length > 0 ? (
+        <ul class="category-index">
+          {categories.map((category) => (
+            <li>
+              <a href={href(`/category/${category.slug}/`)}>
+                <span>{category.name}</span>
+                <span class="count">
+                  {category.tools.length} {category.tools.length === 1 ? 'tool' : 'tools'}
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <EmptyState
+          title="Categories show up with the first reviews"
+          body="Each tool picks one category. That name becomes a page, so the index stays easy to scan as the directory grows."
+        />
+      )
+    }
+  </section>
+
+  <section class="section method" aria-labelledby="method-heading">
+    <h2 id="method-heading">What every review covers</h2>
+    <ol class="method-grid">
+      <li>
+        <span>01</span>
+        <h3>What it is</h3>
+        <p>A plain description of the product, written from the materials in front of the reviewer. No borrowed marketing page.</p>
+      </li>
+      <li>
+        <span>02</span>
+        <h3>Who it's for</h3>
+        <p>Solo creators and small businesses are the audience. A review says which of them the tool actually fits.</p>
+      </li>
+      <li>
+        <span>03</span>
+        <h3>Honest verdict</h3>
+        <p>Pricing, standout details, and a short list of pros and cons. There is no star rating invented to fill a template.</p>
+      </li>
+    </ol>
+  </section>
+</BaseLayout>
