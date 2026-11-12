@@ -59,8 +59,30 @@ for (const file of htmlFiles) {
 }
 
 const home = read('index.html');
-if (!home.includes('No tools are published yet.')) {
-  fail('home page is missing the empty-state line');
+const published = listPublishedTools();
+const basePath = new URL(site).pathname;
+if (published.length === 0) {
+  if (!home.includes('No tools are published yet.')) {
+    fail('home page is missing the empty-state line');
+  }
+} else {
+  if (home.includes('No tools are published yet.')) {
+    fail('home page still shows the empty state while tools are published');
+  }
+  const countLabel = `${published.length} published ${published.length === 1 ? 'tool' : 'tools'}.`;
+  if (!home.includes(countLabel)) fail(`home page is missing the published-count line "${countLabel}"`);
+  const limit = latestLimit();
+  for (const [index, tool] of published.entries()) {
+    const relative = `tools/${tool.slug}/index.html`;
+    const html = read(relative);
+    if (tool.name && html && !html.includes(escapeHtml(tool.name))) {
+      fail(`${relative} does not include the tool name`);
+    }
+    const link = `href="${basePath}tools/${tool.slug}/"`;
+    if ((tool.featured || index < limit) && !home.includes(link)) {
+      fail(`home page does not link to /tools/${tool.slug}/`);
+    }
+  }
 }
 if (!home.includes(`rel="canonical" href="${site}"`) && !home.includes(`rel="canonical" href="${site.slice(0, -1)}"`)) {
   fail(`home canonical is not ${site}`);
@@ -71,6 +93,12 @@ const homeScripts = home
 if (homeScripts) fail('home page includes client JavaScript');
 
 const toolsPage = read('tools/index.html');
+for (const tool of published) {
+  const link = `href="${basePath}tools/${tool.slug}/"`;
+  if (toolsPage && !toolsPage.includes(link)) {
+    fail(`tools index does not link to /tools/${tool.slug}/`);
+  }
+}
 const toolsScripts = toolsPage
   .replace(/<script type="application\/ld\+json"[\s\S]*?<\/script>/gi, '')
   .match(/<script\b/gi);
@@ -106,4 +134,63 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`Verified ${htmlFiles.length} HTML files in dist/. Draft sample stayed out of the build.`);
+const publishedLabel =
+  published.length === 0
+    ? 'No tools are published yet.'
+    : `${published.length} published ${published.length === 1 ? 'tool' : 'tools'}.`;
+console.log(`Verified ${htmlFiles.length} HTML files in dist/. ${publishedLabel} Draft sample stayed out of the build.`);
+
+function listPublishedTools() {
+  const dir = path.resolve('src/content/tools');
+  if (!fs.existsSync(dir)) return [];
+  const tools = [];
+  for (const file of fs.readdirSync(dir)) {
+    if (!file.endsWith('.md')) continue;
+    const raw = fs.readFileSync(path.join(dir, file), 'utf8');
+    const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+    if (!match) {
+      fail(`could not read frontmatter in src/content/tools/${file}`);
+      continue;
+    }
+    const frontmatter = match[1];
+    if (/^draft:\s*true\s*$/m.test(frontmatter)) continue;
+    const name = frontmatter.match(/^name:\s*(.+)\s*$/m);
+    const dateAdded = frontmatter.match(/^dateAdded:\s*(\S+)\s*$/m);
+    tools.push({
+      slug: file.slice(0, -3),
+      name: name ? unquote(name[1]) : '',
+      dateAdded: dateAdded ? unquote(dateAdded[1]) : '',
+      featured: /^featured:\s*true\s*$/m.test(frontmatter),
+    });
+  }
+  tools.sort((a, b) => {
+    if (a.dateAdded !== b.dateAdded) return a.dateAdded < b.dateAdded ? 1 : -1;
+    return a.name.localeCompare(b.name);
+  });
+  return tools;
+}
+
+function latestLimit() {
+  const source = fs.readFileSync(path.resolve('src/site.config.ts'), 'utf8');
+  const match = source.match(/latestLimit:\s*(\d+)/);
+  return match ? Number(match[1]) : Number.POSITIVE_INFINITY;
+}
+
+function unquote(value) {
+  const trimmed = value.trim();
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    return trimmed.slice(1, -1);
+  }
+  return trimmed;
+}
+
+function escapeHtml(value) {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;');
+}
