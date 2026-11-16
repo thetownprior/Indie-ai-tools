@@ -14,6 +14,7 @@ pricing:
   startingPrice: "$21/month billed yearly"
 audience: Faceless YouTubers, educators, marketers, and small businesses who need narrated videos without filming
 maker: Fliki (Nine Thirty Five LLC, co-founders Atul Yadav and Sabir Ahmed)
+affiliateUrl: "https://fliki.ai/?via=dylan-perreault"
 featured: false
 sponsored: false
 verdict: A fast way to turn text into narrated videos, with a huge voice library. Credits run out quickly on AI visuals, refunds are not offered, and support gets poor reports, so test on the free plan first.
